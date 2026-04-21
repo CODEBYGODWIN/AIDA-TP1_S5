@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: #fff; border-radius: 10px; padding: 1.5rem 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    display: flex; flex-direction: column; gap: .25rem;
+  }
+  .kpi-card .label { font-size: .82rem; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi-card .value { font-size: 2.4rem; font-weight: 700; color: #1a1a2e; }
+  .kpi-card .sub   { font-size: .8rem; color: #999; }
+
+  .chart-card {
+    background: #fff; border-radius: 10px; padding: 1.75rem 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  .chart-card h2 { font-size: 1.1rem; margin-bottom: 1.25rem; }
+  .chart-wrap { position: relative; height: 320px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="font-size:1.3rem;margin-bottom:.25rem;">Tableau de bord</h2>
+<p style="color:#666;font-size:.88rem;margin-bottom:1.5rem;">Données : <em>{{ nom_fichier }}</em></p>
+
+{# ── KPI cards ── #}
+<div class="dash-grid">
+  <div class="kpi-card">
+    <span class="label">Clients uniques</span>
+    <span class="value">{{ kpi.total_clients }}</span>
+    <span class="sub">Doublons exclus (US-05)</span>
+  </div>
+  {% for seg, nb in kpi.repartition_segments.items() | sort %}
+  <div class="kpi-card">
+    <span class="label">{{ seg }}</span>
+    <span class="value">{{ nb }}</span>
+    <span class="sub">clients</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# ── Graphique segments (US-07) ── #}
+<div class="chart-card">
+  <h2>Répartition des clients par segment</h2>
+  <div class="chart-wrap">
+    <canvas id="segChart"></canvas>
+  </div>
+</div>
+
+<script>
+  const labels = {{ kpi.repartition_segments.keys() | list | tojson }};
+  const values = {{ kpi.repartition_segments.values() | list | tojson }};
+  const COLORS = ["#4C72B0","#DD8452","#55A868","#C44E52","#8172B2","#937860","#DA8BC3"];
+
+  new Chart(document.getElementById("segChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Nombre de clients",
+        data: values,
+        backgroundColor: labels.map((_, i) => COLORS[i % COLORS.length]),
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f0f0f0" } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+{% endblock %}
