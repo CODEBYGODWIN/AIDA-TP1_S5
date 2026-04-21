@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Recommandations{% endblock %}
+
+{% block head %}
+<style>
+  h2 { font-size: 1.3rem; margin-bottom: .25rem; }
+  .meta { color: #666; font-size: .88rem; margin-bottom: 1.5rem; }
+
+  .total-badge {
+    display: inline-block; background: #fde8e8; color: #c0392b;
+    font-weight: 700; padding: .35rem .9rem; border-radius: 20px;
+    font-size: .88rem; margin-bottom: 1.5rem;
+  }
+
+  .table-wrap { overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: .84rem; }
+  thead { background: #1a1a2e; color: #fff; }
+  th { padding: .65rem .8rem; text-align: left; white-space: nowrap; }
+  td { padding: .55rem .8rem; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #f8f9ff; }
+  tr:last-child td { border-bottom: none; }
+  .empty-row td { text-align: center; color: #999; padding: 2rem; }
+
+  .rec-text { font-size: .82rem; color: #333; max-width: 340px; }
+  .sat-low { color: #c0392b; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Recommandations automatiques</h2>
+<p class="meta">Clients à risque détectés dans <em>{{ nom_fichier }}</em> — US-11</p>
+
+<div class="total-badge">{{ total }} client(s) nécessitent une action</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Segment</th>
+        <th>Risque churn</th>
+        <th>Satisfaction</th>
+        <th>Inactivité (j.)</th>
+        <th>Recommandation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if recommandations %}
+        {% for r in recommandations %}
+          <tr>
+            <td><strong>{{ r.id_client }}</strong></td>
+            <td>{{ r.segment if r.segment else '—' }}</td>
+            <td>{{ r.risque_churn if r.risque_churn else '—' }}</td>
+            <td class="{% if r.satisfaction is not none and r.satisfaction | float < 5.0 %}sat-low{% endif %}">
+              {{ r.satisfaction if r.satisfaction is not none else '—' }}
+            </td>
+            <td>{{ r.dernier_achat_jours if r.dernier_achat_jours is not none else '—' }}</td>
+            <td class="rec-text">{{ r.recommandation }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr class="empty-row"><td colspan="6">Aucun client à risque détecté.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

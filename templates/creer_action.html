@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Créer une action{% endblock %}
+
+{% block head %}
+<style>
+  .page-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  @media (max-width: 900px) { .page-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #fff; border-radius: 10px; padding: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  .card h2 { font-size: 1.2rem; margin-bottom: 1.5rem; }
+
+  .form-group { margin-bottom: 1.1rem; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .35rem; color: #333; }
+  input, select, textarea {
+    width: 100%; padding: .55rem .75rem; border: 1px solid #d0d8e8;
+    border-radius: 6px; font-size: .9rem; background: #fafbfd;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #4a6fa5; background: #fff;
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  .required { color: #c0392b; }
+
+  .btn-submit {
+    width: 100%; padding: .75rem; background: #1a1a2e; color: #fff;
+    border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;
+    transition: background .2s; margin-top: .5rem;
+  }
+  .btn-submit:hover { background: #2d2d5e; }
+
+  /* Historique */
+  .hist-empty { color: #999; font-size: .88rem; padding: 1rem 0; }
+  .action-row {
+    padding: .6rem 0; border-bottom: 1px solid #f0f0f0; font-size: .84rem;
+    display: grid; grid-template-columns: auto 1fr auto; gap: .5rem; align-items: center;
+  }
+  .action-row:last-child { border-bottom: none; }
+  .action-id { font-weight: 700; color: #1a1a2e; font-size: .8rem; }
+  .action-info { color: #555; }
+  .action-info span { color: #888; font-size: .78rem; }
+
+  /* Badge priorité */
+  .prio-Faible   { background: #e8f0fe; color: #1a56db; }
+  .prio-Moyen    { background: #fff3cd; color: #856404; }
+  .prio-Élevé    { background: #fde8e8; color: #c0392b; }
+  .prio-Critique { background: #1a1a2e; color: #fff;    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-grid">
+
+  {# ── Formulaire de création ── #}
+  <div class="card">
+    <h2>Créer une action de suivi</h2>
+    <form method="post">
+
+      <div class="form-group">
+        <label>Client <span class="required">*</span></label>
+        {% if clients %}
+          <select name="id_client" required>
+            <option value="">— Sélectionner un client —</option>
+            {% for c in clients %}
+              <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <input type="text" name="id_client" placeholder="ex: C0082" required />
+          <small style="color:#888;font-size:.8rem;">Chargez un fichier CSV pour obtenir la liste des clients.</small>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label>Type d'action <span class="required">*</span></label>
+        <select name="type_action" required>
+          <option value="">— Choisir —</option>
+          {% for t in types_action %}
+            <option value="{{ t }}">{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description <span class="required">*</span></label>
+        <textarea name="description" placeholder="Brève description de l'action à mener..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Priorité <span class="required">*</span></label>
+        <select name="priorite" required>
+          <option value="">— Choisir —</option>
+          {% for p in priorites %}
+            <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Date d'échéance <span class="required">*</span></label>
+        <input type="date" name="date_echeance" required />
+      </div>
+
+      <div class="form-group">
+        <label>Responsable <span class="required">*</span></label>
+        <input type="text" name="responsable" placeholder="Nom du commercial" required />
+      </div>
+
+      <div class="form-group">
+        <label>Notes <small style="color:#888;font-weight:400;">(optionnel)</small></label>
+        <textarea name="notes" placeholder="Informations complémentaires..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit">Créer l'action</button>
+    </form>
+  </div>
+
+  {# ── Historique des dernières actions ── #}
+  <div class="card">
+    <h2>Dernières actions créées</h2>
+    {% if actions_existantes %}
+      {% for a in actions_existantes | reverse %}
+        <div class="action-row">
+          <span class="action-id">{{ a.id_action }}</span>
+          <div class="action-info">
+            <strong>{{ a.id_client }}</strong> — {{ a.type_action }}<br>
+            <span>{{ a.description[:60] }}{% if a.description | length > 60 %}…{% endif %}</span>
+          </div>
+          <span class="badge prio-{{ a.priorite }}">{{ a.priorite }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="hist-empty">Aucune action créée pour le moment.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

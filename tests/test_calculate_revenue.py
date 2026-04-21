@@ -1,6 +1,9 @@
 import unittest
 import os
+import sys
 import csv
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'standalone'))
 from calculate_revenue import calculate_total_revenue
 
 class TestRevenueCalculation(unittest.TestCase):
