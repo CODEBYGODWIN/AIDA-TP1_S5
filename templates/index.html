@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="upload-card">
+    <h2>Importer un fichier CSV</h2>
+    <p>Sélectionnez un fichier CSV contenant les données clients.</p>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <div class="file-zone">
+            <input type="file" name="fichier_csv" id="fichier_csv" accept=".csv" required>
+            <label for="fichier_csv" id="file-label">Choisir un fichier CSV</label>
+        </div>
+        <button type="submit">Importer et afficher</button>
+    </form>
+</div>
+<style>
+    .upload-card { background: white; border-radius: 10px; padding: 40px; max-width: 560px; margin: 0 auto; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
+    .upload-card h2 { margin-bottom: 10px; color: #1a3a5c; }
+    .upload-card p  { color: #666; margin-bottom: 28px; }
+    .file-zone { border: 2px dashed #1a3a5c; border-radius: 8px; padding: 24px; margin-bottom: 20px; background: #f0f4f8; }
+    .file-zone input[type="file"] { display: none; }
+    .file-zone label { display: block; cursor: pointer; color: #1a3a5c; font-weight: 600; }
+    button { background: #1a3a5c; color: white; border: none; padding: 12px 36px; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: 600; }
+    button:hover { background: #245580; }
+</style>
+<script>
+    document.getElementById('fichier_csv').addEventListener('change', function() {
+        const label = document.getElementById('file-label');
+        label.textContent = this.files[0] ? '📂 ' + this.files[0].name : 'Choisir un fichier CSV';
+    });
+</script>
+{% endblock %}
