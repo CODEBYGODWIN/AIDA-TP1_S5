@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Aperçu — {{ nom_fichier }}{% endblock %}
+
+{% block head %}
+<style>
+  h2 { font-size: 1.3rem; margin-bottom: .25rem; }
+  .meta { color: #666; font-size: .88rem; margin-bottom: 1.5rem; }
+  .statuts-grid { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.5rem; }
+  .statut-card {
+    background: #fff; border-radius: 8px; padding: .6rem 1rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    display: flex; align-items: center; gap: .5rem; font-size: .88rem;
+  }
+  .statut-card .count { font-weight: 700; font-size: 1.1rem; }
+  .filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; align-items: center; }
+  .filter-btn {
+    padding: .4rem .9rem; border-radius: 20px; font-size: .85rem;
+    text-decoration: none; background: #e8ecf3; color: #333;
+    border: 1px solid transparent; transition: background .15s;
+  }
+  .filter-btn:hover { background: #d0d8e8; }
+  .filter-btn.active { background: #1a1a2e; color: #fff; }
+  .result-badge { font-size: .8rem; color: #555; margin-left: auto; }
+  .table-wrap { overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: .84rem; }
+  thead { background: #1a1a2e; color: #fff; }
+  th { padding: .65rem .8rem; text-align: left; white-space: nowrap; }
+  td { padding: .55rem .8rem; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  tr:hover td { background: #f8f9ff; }
+  tr:last-child td { border-bottom: none; }
+  .empty-row td { text-align: center; color: #999; padding: 2rem; }
+</style>
+{% endblock %}
+
+{% set badge_map = {
+  "Rétention urgente":  "badge-retention",
+  "Upsell prioritaire": "badge-upsell-pri",
+  "À surveiller":       "badge-surveiller",
+  "Upsell possible":    "badge-upsell-pos",
+  "Fidèle":             "badge-fidele",
+  "Inconnu":            "badge-inconnu"
+} %}
+
+{% block content %}
+<h2>Aperçu des données — <em>{{ nom_fichier }}</em></h2>
+<p class="meta">{{ apercu.nb_lignes_total }} client(s) &nbsp;·&nbsp; {{ apercu.nb_colonnes }} colonnes</p>
+
+<div class="statuts-grid">
+  {% for statut, nb in resume_statuts.items() | sort %}
+    <div class="statut-card">
+      <span class="badge {{ badge_map.get(statut, 'badge-inconnu') }}">{{ statut }}</span>
+      <span class="count">{{ nb }}</span>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="filter-bar">
+  {% for seg in segments %}
+    <a href="{{ url_for('preview', segment=seg) }}"
+       class="filter-btn {% if seg == segment_actif %}active{% endif %}">{{ seg }}</a>
+  {% endfor %}
+  <span class="result-badge">{{ apercu.nb_lignes_affichees }} / {{ apercu.nb_lignes_total }} affiché(s)</span>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>{% for col in apercu.colonnes %}<th>{{ col }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% if apercu.lignes %}
+        {% for ligne in apercu.lignes %}
+          <tr>
+            {% for val in ligne %}
+              {% set col = apercu.colonnes[loop.index0] %}
+              {% if col == "statut_action" %}
+                <td><span class="badge {{ badge_map.get(val | string, 'badge-inconnu') }}">{{ val }}</span></td>
+              {% else %}
+                <td>{{ val if val is not none else '—' }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr class="empty-row"><td colspan="{{ apercu.colonnes | length }}">Aucun client pour ce segment.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

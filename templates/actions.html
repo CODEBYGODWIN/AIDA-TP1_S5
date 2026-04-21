@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Liste des actions — {{ nom_fichier }}{% endblock %}
+
+{% block head %}
+<style>
+  h2 { font-size: 1.3rem; margin-bottom: .25rem; }
+  .meta { color: #666; font-size: .88rem; margin-bottom: 1.5rem; }
+
+  /* ── Compteurs par statut ── */
+  .comptage-grid { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.5rem; }
+  .comptage-card {
+    background: #fff; border-radius: 8px; padding: .55rem .9rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .85rem; text-decoration: none; color: inherit;
+    border: 2px solid transparent; transition: border-color .15s;
+  }
+  .comptage-card:hover { border-color: #c0c7d4; }
+  .comptage-card.active { border-color: #1a1a2e; }
+  .comptage-card .nb { font-weight: 700; font-size: 1.05rem; }
+
+  /* ── Filtre statut ── */
+  .filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; align-items: center; }
+  .filter-btn {
+    padding: .4rem .9rem; border-radius: 20px; font-size: .85rem;
+    text-decoration: none; background: #e8ecf3; color: #333;
+    border: 1px solid transparent; transition: background .15s;
+  }
+  .filter-btn:hover { background: #d0d8e8; }
+  .filter-btn.active { background: #1a1a2e; color: #fff; }
+  .result-badge { font-size: .8rem; color: #555; margin-left: auto; }
+
+  /* ── Tableau ── */
+  .table-wrap { overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: .84rem; }
+  thead { background: #1a1a2e; color: #fff; }
+  th { padding: .65rem .8rem; text-align: left; white-space: nowrap; }
+  td { padding: .55rem .8rem; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  tr:hover td { background: #f8f9ff; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Ligne colorée selon priorité */
+  tr.prio-retention  td:first-child { border-left: 3px solid #c0392b; }
+  tr.prio-upsell-pri td:first-child { border-left: 3px solid #1e7e34; }
+  tr.prio-surveiller td:first-child { border-left: 3px solid #856404; }
+  tr.prio-upsell-pos td:first-child { border-left: 3px solid #1a56db; }
+  tr.prio-fidele     td:first-child { border-left: 3px solid #4a4a7a; }
+
+  .empty-row td { text-align: center; color: #999; padding: 2rem; }
+</style>
+{% endblock %}
+
+{% set badge_map = {
+  "Rétention urgente":  "badge-retention",
+  "Upsell prioritaire": "badge-upsell-pri",
+  "À surveiller":       "badge-surveiller",
+  "Upsell possible":    "badge-upsell-pos",
+  "Fidèle":             "badge-fidele",
+  "Inconnu":            "badge-inconnu"
+} %}
+{% set row_map = {
+  "Rétention urgente":  "prio-retention",
+  "Upsell prioritaire": "prio-upsell-pri",
+  "À surveiller":       "prio-surveiller",
+  "Upsell possible":    "prio-upsell-pos",
+  "Fidèle":             "prio-fidele"
+} %}
+
+{% block content %}
+<h2>Liste des actions — <em>{{ nom_fichier }}</em></h2>
+<p class="meta">
+  {{ data.nb_total }} client(s) au total &nbsp;·&nbsp; triés par priorité d'action
+</p>
+
+{# ── Compteurs cliquables ── #}
+<div class="comptage-grid">
+  {% for statut, nb in data.comptage.items() %}
+    <a href="{{ url_for('liste_actions', statut=statut) }}"
+       class="comptage-card {% if filtre_statut == statut %}active{% endif %}">
+      <span class="badge {{ badge_map.get(statut, 'badge-inconnu') }}">{{ statut }}</span>
+      <span class="nb">{{ nb }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+{# ── Barre de filtre ── #}
+<div class="filter-bar">
+  {% for s in data.statuts_disponibles %}
+    <a href="{{ url_for('liste_actions', statut=s) }}"
+       class="filter-btn {% if s == filtre_statut %}active{% endif %}">{{ s }}</a>
+  {% endfor %}
+  <span class="result-badge">{{ data.nb_affiches }} / {{ data.nb_total }} affiché(s)</span>
+</div>
+
+{# ── Tableau ── #}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>{% for col in data.colonnes %}<th>{{ col }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% if data.lignes %}
+        {% for ligne in data.lignes %}
+          {% set statut_val = ligne[-1] | string %}
+          <tr class="{{ row_map.get(statut_val, '') }}">
+            {% for val in ligne %}
+              {% set col = data.colonnes[loop.index0] %}
+              {% if col == "statut_action" %}
+                <td><span class="badge {{ badge_map.get(val | string, 'badge-inconnu') }}">{{ val }}</span></td>
+              {% else %}
+                <td>{{ val if val is not none else '—' }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr class="empty-row">
+          <td colspan="{{ data.colonnes | length }}">Aucun client pour ce filtre.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
