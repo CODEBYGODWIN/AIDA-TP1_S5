@@ -1,101 +1,133 @@
 {% extends "base.html" %}
-{% block content %}
+{% block title %}Aperçu — {{ nom_fichier }}{% endblock %}
 
-<div class="preview-header">
-    <h2>Aperçu des données — {{ nom_fichier }}</h2>
-    <div class="meta">
-        <span>{{ apercu.nb_colonnes }} colonnes</span>
-        <span>{{ apercu.nb_lignes_total }} lignes affichées</span>
-        <a href="/" class="btn-retour">← Importer un autre fichier</a>
-    </div>
-</div>
-
-<!-- Filtre par segment (US-09) -->
-<div class="filter-bar">
-    <label for="select-segment"><strong>Filtrer par segment :</strong></label>
-    <div class="segment-buttons">
-        {% for seg in segments %}
-            <a href="{{ url_for('preview', segment=seg) }}"
-               class="btn-segment {% if seg == segment_actif %}actif{% endif %}">
-                {{ seg }}
-            </a>
-        {% endfor %}
-    </div>
-    {% if segment_actif != "Tous" %}
-        <span class="badge-filtre">{{ apercu.nb_lignes_total }} résultat(s) pour « {{ segment_actif }} »</span>
-    {% endif %}
-</div>
-
-<div class="table-wrapper">
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                {% for col in apercu.colonnes %}
-                    <th>{{ col }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for ligne in apercu.lignes %}
-                <tr>
-                    <td class="row-num">{{ loop.index }}</td>
-                    {% for cellule in ligne %}
-                        <td>{{ cellule if cellule is not none else '—' }}</td>
-                    {% endfor %}
-                </tr>
-            {% else %}
-                <tr><td colspan="{{ apercu.nb_colonnes + 1 }}" class="empty">Aucun client pour ce segment.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
+{% block head %}
 <style>
-    .preview-header { margin-bottom: 16px; }
-    .preview-header h2 { color: #1a3a5c; margin-bottom: 10px; }
-    .meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.9rem; }
-    .meta span { background: #e8eef4; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
-    .btn-retour { margin-left: auto; background: #1a3a5c; color: white; padding: 7px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.88rem; }
-    .btn-retour:hover { background: #245580; }
+  h2 { font-size: 1.3rem; margin-bottom: .25rem; }
+  .meta { color: #666; font-size: .88rem; margin-bottom: 1.5rem; }
 
-    /* Barre de filtre segment */
-    .filter-bar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
-        background: white;
-        padding: 16px 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 20px;
-    }
-    .filter-bar label { color: #1a3a5c; white-space: nowrap; }
-    .segment-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-    .btn-segment {
-        padding: 6px 16px;
-        border-radius: 20px;
-        border: 2px solid #1a3a5c;
-        color: #1a3a5c;
-        text-decoration: none;
-        font-size: 0.88rem;
-        font-weight: 600;
-        transition: all 0.15s;
-    }
-    .btn-segment:hover { background: #e8eef4; }
-    .btn-segment.actif { background: #1a3a5c; color: white; }
-    .badge-filtre { background: #fff3cd; color: #856404; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+  /* ── Résumé statuts (US-15) ── */
+  .statuts-grid {
+    display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.5rem;
+  }
+  .statut-card {
+    background: #fff; border-radius: 8px; padding: .6rem 1rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .88rem;
+  }
+  .statut-card .count { font-weight: 700; font-size: 1.1rem; }
 
-    /* Tableau */
-    .table-wrapper { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    thead th { background: #1a3a5c; color: white; padding: 11px 14px; text-align: left; white-space: nowrap; position: sticky; top: 0; }
-    tbody tr:nth-child(even) { background: #f7f9fb; }
-    tbody tr:hover { background: #e8f0f8; }
-    td { padding: 9px 14px; border-bottom: 1px solid #eaeaea; white-space: nowrap; }
-    .row-num { color: #aaa; font-size: 0.8rem; text-align: right; min-width: 36px; }
-    .empty { text-align: center; padding: 32px; color: #888; font-style: italic; }
+  /* ── Filtre segments ── */
+  .filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+  .filter-btn {
+    padding: .4rem .9rem; border-radius: 20px; font-size: .85rem;
+    text-decoration: none; background: #e8ecf3; color: #333;
+    border: 1px solid transparent; transition: background .15s;
+  }
+  .filter-btn:hover { background: #d0d8e8; }
+  .filter-btn.active {
+    background: #1a1a2e; color: #fff; border-color: #1a1a2e;
+  }
+  .result-badge {
+    font-size: .8rem; color: #555; align-self: center; margin-left: auto;
+  }
+
+  /* ── Tableau ── */
+  .table-wrap { overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: .84rem; }
+  thead { background: #1a1a2e; color: #fff; }
+  th { padding: .65rem .8rem; text-align: left; white-space: nowrap; }
+  td { padding: .55rem .8rem; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  tr:hover td { background: #f8f9ff; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Badges statut_action ── */
+  .badge {
+    display: inline-block; padding: .2rem .55rem; border-radius: 12px;
+    font-size: .78rem; font-weight: 600; white-space: nowrap;
+  }
+  .badge-retention  { background: #fde8e8; color: #c0392b; }
+  .badge-upsell-pri { background: #e8f8e8; color: #1e7e34; }
+  .badge-surveiller { background: #fff3cd; color: #856404; }
+  .badge-upsell-pos { background: #e8f0fe; color: #1a56db; }
+  .badge-fidele     { background: #e8e8f0; color: #4a4a7a; }
+  .badge-inconnu    { background: #f0f0f0; color: #888;    }
+
+  .empty-row td { text-align: center; color: #999; padding: 2rem; }
 </style>
+{% endblock %}
 
+{% block content %}
+<h2>Aperçu des données — <em>{{ nom_fichier }}</em></h2>
+<p class="meta">
+  {{ apercu.nb_lignes_total }} client(s) au total &nbsp;·&nbsp;
+  {{ apercu.nb_colonnes }} colonnes
+</p>
+
+{# ── Résumé statuts d'action (US-15) ── #}
+{% set badge_map = {
+  "Rétention urgente":  "badge-retention",
+  "Upsell prioritaire": "badge-upsell-pri",
+  "À surveiller":       "badge-surveiller",
+  "Upsell possible":    "badge-upsell-pos",
+  "Fidèle":             "badge-fidele",
+  "Inconnu":            "badge-inconnu"
+} %}
+<div class="statuts-grid">
+  {% for statut, nb in resume_statuts.items() | sort %}
+    <div class="statut-card">
+      <span class="badge {{ badge_map.get(statut, 'badge-inconnu') }}">{{ statut }}</span>
+      <span class="count">{{ nb }}</span>
+    </div>
+  {% endfor %}
+</div>
+
+{# ── Filtre segments ── #}
+<div class="filter-bar">
+  {% for seg in segments %}
+    <a href="{{ url_for('preview', segment=seg) }}"
+       class="filter-btn {% if seg == segment_actif %}active{% endif %}">
+      {{ seg }}
+    </a>
+  {% endfor %}
+  <span class="result-badge">{{ apercu.nb_lignes_affichees }} / {{ apercu.nb_lignes_total }} affiché(s)</span>
+</div>
+
+{# ── Tableau ── #}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        {% for col in apercu.colonnes %}
+          <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% if apercu.lignes %}
+        {% for ligne in apercu.lignes %}
+          <tr>
+            {% for val in ligne %}
+              {% set col = apercu.colonnes[loop.index0] %}
+              {% if col == "statut_action" %}
+                <td>
+                  <span class="badge {{ badge_map.get(val | string, 'badge-inconnu') }}">
+                    {{ val }}
+                  </span>
+                </td>
+              {% else %}
+                <td>{{ val if val is not none else '—' }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr class="empty-row">
+          <td colspan="{{ apercu.colonnes | length }}">Aucun client pour ce segment.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

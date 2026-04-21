@@ -1,50 +1,40 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-import pandas as pd
 import io
+import os
+
+import pandas as pd
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 from components.preview import generer_apercu, valider_colonnes
-from components.filter import get_segments, filtrer_par_segment
+from components.filter import filtrer_par_segment, get_segments
+from components.actions import enrichir_statuts, compter_statuts
 
 app = Flask(__name__)
-app.secret_key = "aida-secret-key"
-
-TAILLE_MAX_FICHIER = 5 * 1024 * 1024  # 5 Mo
+app.secret_key = os.environ.get("SECRET_KEY", "aida-dev-secret")
 
 
 def _df_depuis_session() -> pd.DataFrame | None:
-    """Recharge le DataFrame depuis les données stockées en session."""
     data = session.get("csv_data")
     if data is None:
         return None
     return pd.read_json(io.StringIO(data), orient="split")
 
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
     return render_template("index.html")
 
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    fichier = request.files.get("fichier_csv")
-
+    fichier = request.files.get("fichier")
     if not fichier or fichier.filename == "":
         flash("Aucun fichier sélectionné.", "error")
         return redirect(url_for("index"))
 
-    if not fichier.filename.endswith(".csv"):
-        flash("Le fichier doit être au format CSV.", "error")
-        return redirect(url_for("index"))
-
-    contenu = fichier.read()
-    if len(contenu) > TAILLE_MAX_FICHIER:
-        flash("Le fichier dépasse la taille maximale autorisée (5 Mo).", "error")
-        return redirect(url_for("index"))
-
     try:
-        df = pd.read_csv(io.BytesIO(contenu))
-    except Exception:
-        flash("Impossible de lire le fichier CSV. Vérifiez son format.", "error")
+        df = pd.read_csv(fichier, encoding="utf-8-sig")
+    except Exception as e:
+        flash(f"Erreur de lecture du fichier : {e}", "error")
         return redirect(url_for("index"))
 
     valide, manquantes = valider_colonnes(df)
@@ -52,11 +42,8 @@ def upload():
         flash(f"Colonnes manquantes : {', '.join(manquantes)}", "error")
         return redirect(url_for("index"))
 
-    # Stocke le DataFrame en session pour le filtrage
     session["csv_data"] = df.to_json(orient="split")
     session["nom_fichier"] = fichier.filename
-
-    flash("Fichier importé avec succès.", "success")
     return redirect(url_for("preview"))
 
 
@@ -70,7 +57,11 @@ def preview():
     segment_actif = request.args.get("segment", "Tous")
     df_filtre = filtrer_par_segment(df, segment_actif)
 
-    apercu = generer_apercu(df_filtre)
+    # US-15 : enrichir avec le statut d'action
+    df_enrichi = enrichir_statuts(df_filtre)
+    resume_statuts = compter_statuts(df_enrichi)
+
+    apercu = generer_apercu(df_enrichi)
     segments = ["Tous"] + get_segments(df)
 
     return render_template(
@@ -79,6 +70,7 @@ def preview():
         nom_fichier=session.get("nom_fichier", "données"),
         segments=segments,
         segment_actif=segment_actif,
+        resume_statuts=resume_statuts,
     )
 
 

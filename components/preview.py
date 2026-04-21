@@ -1,11 +1,10 @@
 import pandas as pd
 
-
 COLONNES_REQUISES = [
     "id_client", "segment", "region", "canal_acquisition",
     "nb_commandes", "chiffre_affaires", "date_dernier_achat",
     "dernier_achat_jours", "satisfaction", "statut_client",
-    "risque_churn", "potentiel_upsell", "cout_support"
+    "risque_churn", "potentiel_upsell", "cout_support",
 ]
 
 MAX_LIGNES_APERCU = 50
@@ -15,7 +14,6 @@ def generer_apercu(df: pd.DataFrame) -> dict:
     colonnes = list(df.columns)
     apercu_df = df.head(MAX_LIGNES_APERCU)
     lignes = apercu_df.values.tolist()
-
     return {
         "colonnes": colonnes,
         "lignes": lignes,
