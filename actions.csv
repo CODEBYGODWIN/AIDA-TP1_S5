@@ -1,0 +1,5 @@
+id_action,id_client,type_action,description,priorite,statut,date_creation,date_echeance,responsable,notes
+ACT001,C0219,Appel téléphonique,Relance client inactif - risque élevé,Critique,Planifiée,21/04/2026 12:48,22/04/2026,Jean Dupont,Contact prioritaire - gros chiffre d'affaires
+ACT002,C0071,Offre spéciale,Proposition d'offre commerciale pour retenir,Élevé,Planifiée,21/04/2026 12:48,24/04/2026,Marie Martin,PME inactif depuis longtemps
+ACT003,C0082,Email commercial,Envoi de newsletter + proposition upsell,Moyen,En cours,21/04/2026 12:48,28/04/2026,Pierre Bernard,Suivi régulier
+ACT004,C0121,Réunion en personne,Visite client pour réévaluation des besoins,Élevé,Planifiée,21/04/2026 12:48,26/04/2026,Anne Leclerc,Association - risque moyen mais inactif
