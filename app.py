@@ -7,6 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from components.preview import generer_apercu, valider_colonnes
 from components.filter import filtrer_par_segment, get_segments
 from components.actions import enrichir_statuts, compter_statuts
+from components.action_list import construire_liste_actions
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "aida-dev-secret")
@@ -56,8 +57,6 @@ def preview():
 
     segment_actif = request.args.get("segment", "Tous")
     df_filtre = filtrer_par_segment(df, segment_actif)
-
-    # US-15 : enrichir avec le statut d'action
     df_enrichi = enrichir_statuts(df_filtre)
     resume_statuts = compter_statuts(df_enrichi)
 
@@ -71,6 +70,24 @@ def preview():
         segments=segments,
         segment_actif=segment_actif,
         resume_statuts=resume_statuts,
+    )
+
+
+@app.route("/actions", methods=["GET"])
+def liste_actions():
+    df = _df_depuis_session()
+    if df is None:
+        flash("Aucune donnée chargée. Importez d'abord un fichier CSV.", "error")
+        return redirect(url_for("index"))
+
+    filtre_statut = request.args.get("statut", "Tous")
+    data = construire_liste_actions(df, filtre_statut)
+
+    return render_template(
+        "actions.html",
+        data=data,
+        filtre_statut=filtre_statut,
+        nom_fichier=session.get("nom_fichier", "données"),
     )
 
 

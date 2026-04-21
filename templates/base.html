@@ -9,22 +9,43 @@
     body { font-family: system-ui, sans-serif; background: #f5f6fa; color: #1a1a2e; }
     header {
       background: #1a1a2e; color: #fff; padding: 1rem 2rem;
-      display: flex; align-items: center; gap: 1rem;
+      display: flex; align-items: center; gap: 1.5rem;
     }
     header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: .05em; }
-    header span { font-size: .85rem; opacity: .6; }
+    nav { display: flex; gap: .25rem; margin-left: auto; }
+    nav a {
+      color: rgba(255,255,255,.7); text-decoration: none;
+      padding: .4rem .9rem; border-radius: 6px; font-size: .88rem;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover, nav a.active { background: rgba(255,255,255,.15); color: #fff; }
     main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
     .flash { padding: .75rem 1.25rem; border-radius: 6px; margin-bottom: 1rem; font-size: .9rem; }
-    .flash.error { background: #fde8e8; color: #c0392b; border: 1px solid #f5c6cb; }
+    .flash.error   { background: #fde8e8; color: #c0392b; border: 1px solid #f5c6cb; }
     .flash.success { background: #e8f8e8; color: #1e7e34; border: 1px solid #c3e6cb; }
-    .flash.info { background: #e8f0fe; color: #1a56db; border: 1px solid #bee3f8; }
+    .flash.info    { background: #e8f0fe; color: #1a56db; border: 1px solid #bee3f8; }
+    /* badges partagés */
+    .badge {
+      display: inline-block; padding: .2rem .55rem; border-radius: 12px;
+      font-size: .78rem; font-weight: 600; white-space: nowrap;
+    }
+    .badge-retention  { background: #fde8e8; color: #c0392b; }
+    .badge-upsell-pri { background: #e8f8e8; color: #1e7e34; }
+    .badge-surveiller { background: #fff3cd; color: #856404; }
+    .badge-upsell-pos { background: #e8f0fe; color: #1a56db; }
+    .badge-fidele     { background: #e8e8f0; color: #4a4a7a; }
+    .badge-inconnu    { background: #f0f0f0; color: #888;    }
   </style>
   {% block head %}{% endblock %}
 </head>
 <body>
   <header>
     <h1>AIDA</h1>
-    <span>AI Decision Assistant</span>
+    <nav>
+      <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Importer</a>
+      <a href="{{ url_for('preview') }}" class="{% if request.endpoint == 'preview' %}active{% endif %}">Aperçu</a>
+      <a href="{{ url_for('liste_actions') }}" class="{% if request.endpoint == 'liste_actions' %}active{% endif %}">Actions</a>
+    </nav>
   </header>
   <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
