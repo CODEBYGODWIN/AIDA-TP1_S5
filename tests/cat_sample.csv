@@ -1,0 +1,4 @@
+statut_client,dernier_achat_jours,risque_churn
+Actif,50,Faible
+Inactif,400,Moyen
+Actif,200,Élevé
