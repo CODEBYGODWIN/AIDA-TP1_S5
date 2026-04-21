@@ -13,3 +13,4 @@ def calculate_total_revenue(file_path):
 
 if __name__ == "__main__":
     print(calculate_total_revenue('business_data.csv'))
+
