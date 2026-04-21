@@ -12,10 +12,6 @@ MAX_LIGNES_APERCU = 50
 
 
 def generer_apercu(df: pd.DataFrame) -> dict:
-    """
-    Génère les données d'aperçu tabulaire à partir d'un DataFrame.
-    Retourne un dict avec colonnes, lignes et métadonnées d'affichage.
-    """
     colonnes = list(df.columns)
     apercu_df = df.head(MAX_LIGNES_APERCU)
     lignes = apercu_df.values.tolist()
@@ -30,9 +26,5 @@ def generer_apercu(df: pd.DataFrame) -> dict:
 
 
 def valider_colonnes(df: pd.DataFrame) -> tuple[bool, list[str]]:
-    """
-    Vérifie que le DataFrame contient toutes les colonnes requises.
-    Retourne (valide, colonnes_manquantes).
-    """
     colonnes_manquantes = [c for c in COLONNES_REQUISES if c not in df.columns]
     return len(colonnes_manquantes) == 0, colonnes_manquantes

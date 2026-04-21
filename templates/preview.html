@@ -1,16 +1,29 @@
 {% extends "base.html" %}
-
 {% block content %}
+
 <div class="preview-header">
     <h2>Aperçu des données — {{ nom_fichier }}</h2>
     <div class="meta">
         <span>{{ apercu.nb_colonnes }} colonnes</span>
-        <span>{{ apercu.nb_lignes_total }} lignes au total</span>
-        {% if apercu.nb_lignes_affichees < apercu.nb_lignes_total %}
-            <span class="info">Affichage limité aux {{ apercu.nb_lignes_affichees }} premières lignes</span>
-        {% endif %}
+        <span>{{ apercu.nb_lignes_total }} lignes affichées</span>
         <a href="/" class="btn-retour">← Importer un autre fichier</a>
     </div>
+</div>
+
+<!-- Filtre par segment (US-09) -->
+<div class="filter-bar">
+    <label for="select-segment"><strong>Filtrer par segment :</strong></label>
+    <div class="segment-buttons">
+        {% for seg in segments %}
+            <a href="{{ url_for('preview', segment=seg) }}"
+               class="btn-segment {% if seg == segment_actif %}actif{% endif %}">
+                {{ seg }}
+            </a>
+        {% endfor %}
+    </div>
+    {% if segment_actif != "Tous" %}
+        <span class="badge-filtre">{{ apercu.nb_lignes_total }} résultat(s) pour « {{ segment_actif }} »</span>
+    {% endif %}
 </div>
 
 <div class="table-wrapper">
@@ -31,87 +44,58 @@
                         <td>{{ cellule if cellule is not none else '—' }}</td>
                     {% endfor %}
                 </tr>
+            {% else %}
+                <tr><td colspan="{{ apercu.nb_colonnes + 1 }}" class="empty">Aucun client pour ce segment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
 <style>
-    .preview-header {
-        margin-bottom: 20px;
-    }
-    .preview-header h2 {
-        color: #1a3a5c;
-        margin-bottom: 10px;
-    }
-    .meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        align-items: center;
-        font-size: 0.9rem;
-        color: #555;
-    }
-    .meta span {
-        background: #e8eef4;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-weight: 500;
-    }
-    .meta .info {
-        background: #fff3cd;
-        color: #856404;
-    }
-    .btn-retour {
-        margin-left: auto;
-        background: #1a3a5c;
-        color: white;
-        padding: 7px 18px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.88rem;
-    }
+    .preview-header { margin-bottom: 16px; }
+    .preview-header h2 { color: #1a3a5c; margin-bottom: 10px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.9rem; }
+    .meta span { background: #e8eef4; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+    .btn-retour { margin-left: auto; background: #1a3a5c; color: white; padding: 7px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.88rem; }
     .btn-retour:hover { background: #245580; }
 
-    .table-wrapper {
-        overflow-x: auto;
+    /* Barre de filtre segment */
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
         background: white;
+        padding: 16px 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
     }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    .filter-bar label { color: #1a3a5c; white-space: nowrap; }
+    .segment-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-segment {
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 2px solid #1a3a5c;
+        color: #1a3a5c;
+        text-decoration: none;
         font-size: 0.88rem;
+        font-weight: 600;
+        transition: all 0.15s;
     }
+    .btn-segment:hover { background: #e8eef4; }
+    .btn-segment.actif { background: #1a3a5c; color: white; }
+    .badge-filtre { background: #fff3cd; color: #856404; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
 
-    thead th {
-        background: #1a3a5c;
-        color: white;
-        padding: 11px 14px;
-        text-align: left;
-        white-space: nowrap;
-        position: sticky;
-        top: 0;
-    }
-
+    /* Tableau */
+    .table-wrapper { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead th { background: #1a3a5c; color: white; padding: 11px 14px; text-align: left; white-space: nowrap; position: sticky; top: 0; }
     tbody tr:nth-child(even) { background: #f7f9fb; }
-    tbody tr:hover           { background: #e8f0f8; }
-
-    td {
-        padding: 9px 14px;
-        border-bottom: 1px solid #eaeaea;
-        white-space: nowrap;
-    }
-
-    .row-num {
-        color: #aaa;
-        font-size: 0.8rem;
-        text-align: right;
-        padding-right: 10px;
-        min-width: 36px;
-    }
+    tbody tr:hover { background: #e8f0f8; }
+    td { padding: 9px 14px; border-bottom: 1px solid #eaeaea; white-space: nowrap; }
+    .row-num { color: #aaa; font-size: 0.8rem; text-align: right; min-width: 36px; }
+    .empty { text-align: center; padding: 32px; color: #888; font-style: italic; }
 </style>
+
 {% endblock %}
