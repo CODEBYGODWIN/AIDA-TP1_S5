@@ -1,0 +1,22 @@
+﻿id_client,segment,region,canal_acquisition,nb_commandes,chiffre_affaires,date_dernier_achat,dernier_achat_jours,satisfaction,statut_client,risque_churn,potentiel_upsell,cout_support
+C0219,Association,Lyon,Téléphone,9,2346.35,2025-01-04,472,4.1,Inactif,élevé,59.0,17.12
+C0071,PME,Toulouse,Email,7,5778.25,2025-09-25,208,4.6,Inactif,élevé,34.5,56.12
+C0043,PME,Lille,Téléphone,12,5973.28,2024-09-14,584,4.9,Inactif,élevé,72.3,44.81
+C0017,Grand compte,Bordeaux,Web,9,12597.53,2025-08-30,234,4.7,À relancer,élevé,82.6,100.83
+C0037,Particulier,Lyon,Partenaire,11,1748.8,2024-05-15,706,4.6,Inactif,élevé,36.8,11.6
+C0067,Particulier,Bordeaux,Partenaire,10,818.55,2024-05-01,720,4.0,Inactif,élevé,59.4,117.52
+C0148,Particulier,Bordeaux,Email,6,50.0,2025-05-08,348,5.3,Inactif,élevé,48.7,192.31
+C0061,Particulier,Lille,Partenaire,7,1161.99,2024-11-02,535,2.3,Inactif,élevé,35.4,175.7
+C0214,Particulier,Paris,Web,7,950.08,2025-01-22,454,4.5,Inactif,élevé,57.8,166.02
+C0115,PME ,Nantes,Web,4,2747.37,2024-04-21,730,8.9,Inactif,élevé,28.9,10.42
+C0089,Particulier,Marseille,Téléphone,-1,2210.64,2024-09-04,594,4.9,À relancer,élevé,38.4,209.38
+C0047,Particulier,Bordeaux,Web,6,442.92,2025-08-10,254,6.0,Inactif,élevé,73.7,190.53
+C0078,Particulier,Bordeaux,Web,10,556.94,2025-04-20,366,5.0,Inactif,élevé,19.9,58.58
+C0032,Association,Paris,Partenaire,10,4624.52,2025-05-25,331,3.4,Inactif,élevé,33.8,184.31
+C0098,Particulier,Nantes,Téléphone,9,799.06,2024-07-30,630,4.3,Inactif,élevé,56.0,134.34
+C0038,Particulier,Toulouse,Email,10,2482.02,2025-01-28,448,4.8,À relancer,élevé,63.6,82.47
+C0034,Grand compte,Paris,Web,9,28990.23,2024-12-10,497,3.5,À relancer,élevé,59.0,119.63
+C0091,Grand compte,Nantes,Partenaire,6,21952.91,2024-11-14,523,4.3,Inactif,élevé,52.3,199.66
+C0139,PME,Paris,Email,5,7277.69,2024-10-23,545,4.5,Inactif,élevé,54.0,324.66
+C0206,Grand compte,Toulouse,Téléphone,12,18228.03,2024-11-30,507,4.5,À relancer,élevé,69.3,104.85
+C0160,Particulier,Paris,Partenaire,2,992.61,2025-06-26,299,3.8,Inactif,élevé,7.9,182.34
